@@ -4,12 +4,6 @@ from select import select
 from movie_app.models import Movie, Director, Review
 
 
-class MovieSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Movie
-        fields = '__all__'
-
-
 class DirectorSerializer(serializers.ModelSerializer):
     class Meta:
         model = Director
@@ -19,4 +13,14 @@ class DirectorSerializer(serializers.ModelSerializer):
 class ReviewSerializer(serializers.ModelSerializer):
     class Meta:
         model = Review
-        fields = '__all__'
+        fields = 'id text stars'.split()
+
+
+class MovieSerializer(serializers.ModelSerializer):
+    director = DirectorSerializer(many=False)
+    reviews = ReviewSerializer(many=True)
+
+    class Meta:
+        model = Movie
+        fields = 'id description director reviews'.split()
+

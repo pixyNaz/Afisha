@@ -3,6 +3,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from Afisha.serializers import MovieSerializer, DirectorSerializer, ReviewSerializer
 from .models import Movie, Director, Review
+from django.db.models import Avg, Count
 
 
 @api_view(['GET'])
@@ -14,7 +15,7 @@ def movie_item_api_view(request, id):
                         status=status.HTTP_404_NOT_FOUND)
     data = MovieSerializer(movie, many=False).data
     if request.method == 'GET':
-        serializer = ReviewSerializer()
+        serializer = MovieSerializer()
         return Response(serializer.data)
 
     elif request.method == 'DELETE':
@@ -27,8 +28,7 @@ def movie_item_api_view(request, id):
 @api_view(['GET'])
 def movie_list_api_view(request):
     movies = Movie.objects.all()
-    data = MovieSerializer(isinstance=movies, many=True).data
-
+    data = MovieSerializer(instance=movies, many=True).data
     return Response(data=data)
 
 
@@ -41,7 +41,7 @@ def director_api_view(request, id):
                          status=status.HTTP_404_NOT_FOUND)
     data = DirectorSerializer(director, many=False).data
     if request.method == 'GET':
-        serializer = ReviewSerializer()
+        serializer = DirectorSerializer()
         return Response(serializer.data)
 
     elif request.method == 'DELETE':
@@ -50,7 +50,14 @@ def director_api_view(request, id):
 
     return Response(data=data)
 
-    return Response(data=data)
+
+@api_view(['GET'])
+def director_list_api_view(request):
+    if request.method == 'GET':
+        director = Director.objects.all()
+        movies_count = Director.objects.aggregate(count_movies=Count('director'))
+        data_dict = DirectorSerializer(director, many=True).data
+        return Response(data=[data_dict, movies_count])
 
 
 @api_view(['GET'])
@@ -67,6 +74,14 @@ def movie_api_view(request):
     }
 
     return Response(data=dict_)
+
+
+@api_view(['GET'])
+def review_list_api_view(request):
+    reviews = Review.objects.all()
+    data = ReviewSerializer(instance=reviews, many=True).data
+
+    return Response(data=data)
 
 
 @api_view(['GET'])
