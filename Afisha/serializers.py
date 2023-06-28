@@ -1,5 +1,4 @@
 from rest_framework import serializers
-from select import select
 
 from movie_app.models import Movie, Director, Review
 
@@ -22,5 +21,4 @@ class MovieSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Movie
-        fields = 'id description director reviews'.split()
-
+        fields = 'id title description director reviews'.split()

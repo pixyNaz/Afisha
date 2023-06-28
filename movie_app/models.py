@@ -21,7 +21,6 @@ class Movie(models.Model):
     title = models.CharField(max_length=100)
     description = models.TextField(null=True, blank=True)
     duration = models.FloatField()
-    # review = models.ManyToManyField(Review)
     director = models.ForeignKey(Director, on_delete=models.CASCADE, related_name='director')
 
     def __str__(self):
