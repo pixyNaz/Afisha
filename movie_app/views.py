@@ -1,7 +1,7 @@
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
-from Afisha.serializers import MovieSerializer, DirectorSerializer, ReviewSerializer
+from Afisha.serializers import MovieSerializer, DirectorSerializer, ReviewSerializer, MovieValidateSerializer
 from .models import Movie, Director, Review
 from django.db.models import Avg, Count
 
@@ -17,6 +17,9 @@ def movie_item_api_view(request, id):
         data = MovieSerializer(movie, many=False).data
         return Response(data=data)
     elif request.method == 'PUT':
+        serializer = MovieValidateSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
         movie.title = request.data.get('title')
         movie.description = request.data.get('description')
         movie.duration = request.data.get('duration')
@@ -29,11 +32,17 @@ def movie_item_api_view(request, id):
 
 @api_view(['GET', 'POST'])
 def movie_list_api_view(request):
+    serializer = MovieValidateSerializer(data=request.data)
+    serializer.is_valid(raise_exception=True)
     if request.method == 'GET':
         movies = Movie.objects.all()
         data = MovieSerializer(instance=movies, many=True).data
         return Response(data=data)
     elif request.method == 'POST':
+        serializer = MovieValidateSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(status=status.HTTP_400_BAD_REQUEST,
+                            data=serializer.errors)
         title = request.data.get('title')
         description = request.data.get('description')
         duration = request.data.get('duration')
@@ -55,9 +64,14 @@ def director_api_view(request, id):
         return Response(data={'Director not found!'},
                          status=status.HTTP_404_NOT_FOUND)
     if request.method == 'GET':
+        serializer = DirectorSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
         data = DirectorSerializer(director, many=False).data
         return Response(data=data)
     elif request.method == "PUT":
+        serializer = MovieValidateSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
         director.name = request.data.get('name')
         return Response(data={DirectorSerializer(director).data})
 
@@ -65,6 +79,9 @@ def director_api_view(request, id):
 @api_view(['GET', 'POST'])
 def director_list_api_view(request):
     if request.method == 'GET':
+        serializer = MovieValidateSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
         director = Director.objects.all()
         movies_count = Director.objects.aggregate(count_movies=Count('director'))
         data_dict = DirectorSerializer(director, many=True).data
@@ -119,6 +136,8 @@ def review_api_view(request, id):
         data = ReviewSerializer(review, many=True).data
         return Response(data=data)
     elif request.method == 'PUT':
+        serializer = MovieValidateSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
         review.text = request.data.get('text')
         review.movie = request.data.get('movie')
         review.stars = request.data.get('stars')
